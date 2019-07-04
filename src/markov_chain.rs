@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 
 use nalgebra::DMatrix;
 use rand::seq::SliceRandom;
@@ -90,7 +90,9 @@ impl MarkovChain {
                 for k in states.iter().clone() {
                     if k == &f_state {
                         return true;
-                    } else if frontier.contains(&k.to_string()) == false && explored.contains(&k.to_string()) == false {
+                    } else if frontier.contains(&k.to_string()) == false
+                        && explored.contains(&k.to_string()) == false
+                    {
                         frontier.push_back(k.to_string());
                     }
                 }
@@ -101,8 +103,7 @@ impl MarkovChain {
 
     /// Check if the Markov Chain is irreducible
     pub fn is_reducible(&self) -> bool {
-        let is_reducible = false;
-        let states: Vec<String> = self.index_map.clone().into_iter().map(|(k, v)| k).collect();
+        let states: Vec<String> = self.index_map.clone().into_iter().map(|(k, _)| k).collect();
         for i in &states {
             for j in &states {
                 if !self.is_accessible(i.clone(), j.clone()) {
@@ -122,5 +123,51 @@ impl MarkovChain {
             .filter(|(_, v)| v > &0.0)
             .map(|(k, _)| (self.state_map.get(&k).unwrap().to_string()))
             .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nalgebra::DMatrix;
+
+    #[test]
+    fn is_reducible() {
+        let transition_matrix = DMatrix::from_vec(
+            4,
+            4,
+            vec![
+                0.5, 0.5, 0.0, 0.0, 0.25, 0.0, 0.5, 0.25, 0.25, 0.5, 0.0, 0.25, 0.0, 0.0, 0.5, 0.5,
+            ],
+        );
+
+        let states = vec![
+            "A".to_string(),
+            "B".to_string(),
+            "C".to_string(),
+            "D".to_string(),
+        ];
+        let markov_chain = MarkovChain::new(transition_matrix, states);
+        assert_eq!(true, markov_chain.is_reducible());
+    }
+
+    #[test]
+    fn is_irreducible() {
+        let transition_matrix = DMatrix::from_vec(
+            4,
+            4,
+            vec![
+                1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0,
+            ],
+        );
+
+        let states = vec![
+            "A".to_string(),
+            "B".to_string(),
+            "C".to_string(),
+            "D".to_string(),
+        ];
+        let markov_chain = MarkovChain::new(transition_matrix, states);
+        assert_eq!(false, markov_chain.is_reducible());
     }
 }
