@@ -1,0 +1,9 @@
+[package]
+name = "markov-process"
+version = "0.1.0"
+authors = ["Marc Breitung <info@marcbreitung.de>"]
+edition = "2018"
+
+[dependencies]
+rand = "0.6"
+nalgebra = "0.18"
